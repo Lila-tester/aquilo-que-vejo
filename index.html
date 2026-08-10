@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#171717" />
+  <title>Aquilo que vejo</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      margin: 0;
+      min-height: 100%;
+    }
+
+    body {
+      background:
+        radial-gradient(circle at top, #383838 0, #1b1b1b 42%, #101010 100%);
+      color: #111;
+      font-family: Arial, Helvetica, sans-serif;
+      min-height: 100vh;
+      min-height: 100svh;
+      padding: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow-x: hidden;
+    }
+
+    .desktop {
+      width: min(100%, 820px);
+      opacity: 0;
+      transform: scale(.985);
+      animation: boot .8s ease forwards;
+    }
+
+    .browser {
+      background: #c8c8c8;
+      border: 2px solid #f7f7f7;
+      border-right-color: #656565;
+      border-bottom-color: #656565;
+      box-shadow:
+        0 0 0 2px #111,
+        14px 18px 0 rgba(0,0,0,.18);
+    }
+
+    .titlebar {
+      min-height: 32px;
+      background: linear-gradient(90deg, #000080, #1956b3);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 5px 7px;
+      font-size: 13px;
+      font-weight: bold;
+    }
+
+    .window-buttons {
+      display: flex;
+      gap: 4px;
+    }
+
+    .win-btn {
+      width: 22px;
+      height: 20px;
+      background: #c0c0c0;
+      color: #111;
+      border: 2px solid #fff;
+      border-right-color: #555;
+      border-bottom-color: #555;
+      display: grid;
+      place-items: center;
+      font-size: 11px;
+      line-height: 1;
+    }
+
+    .toolbar {
+      background: #c0c0c0;
+      border-bottom: 1px solid #777;
+      padding: 8px;
+    }
+
+    .menu {
+      display: flex;
+      gap: 18px;
+      font-size: 12px;
+      margin-bottom: 8px;
+      color: #111;
+    }
+
+    .address-row {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 7px;
+      align-items: center;
+    }
+
+    .address-label {
+      font-size: 11px;
+    }
+
+    .address {
+      min-height: 25px;
+      background: white;
+      border: 2px inset #ddd;
+      padding: 4px 7px;
+      font-family: "Courier New", monospace;
+      font-size: 12px;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    .viewport {
+      position: relative;
+      min-height: 540px;
+      background: #f5f1e8;
+      overflow: hidden;
+    }
+
+    .scanlines {
+      pointer-events: none;
+      position: absolute;
+      inset: 0;
+      z-index: 5;
+      opacity: .08;
+      background:
+        repeating-linear-gradient(
+          to bottom,
+          rgba(0,0,0,.25) 0,
+          rgba(0,0,0,.25) 1px,
+          transparent 1px,
+          transparent 4px
+        );
+    }
+
+    .site {
+      min-height: 540px;
+      padding: 54px 44px 40px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      z-index: 2;
+    }
+
+    .top-meta {
+      font-family: "Courier New", monospace;
+      font-size: 11px;
+      color: #9c5438;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+    }
+
+    .main {
+      max-width: 600px;
+      margin: 60px auto;
+      width: 100%;
+    }
+
+    .status {
+      font-family: "Courier New", monospace;
+      font-size: 13px;
+      color: #57514a;
+      margin-bottom: 22px;
+      min-height: 58px;
+      line-height: 1.7;
+    }
+
+    .cursor {
+      display: inline-block;
+      width: 8px;
+      height: 14px;
+      background: #222;
+      vertical-align: -2px;
+      margin-left: 4px;
+      animation: blink .8s steps(1) infinite;
+    }
+
+    .file-card {
+      display: none;
+      border: 1px solid #cbbfb1;
+      background: rgba(255,255,255,.42);
+      padding: 28px;
+      box-shadow: 9px 9px 0 rgba(81,62,49,.08);
+      animation: reveal .8s ease both;
+    }
+
+    .file-card.visible {
+      display: block;
+    }
+
+    .tiny {
+      font-family: "Courier New", monospace;
+      color: #a65a3b;
+      font-size: 10px;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+      margin-bottom: 13px;
+    }
+
+    h1 {
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(46px, 8vw, 78px);
+      line-height: .88;
+      font-weight: normal;
+      letter-spacing: -.05em;
+      margin: 0;
+    }
+
+    h1 span {
+      display: block;
+    }
+
+    .descriptor {
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 19px;
+      font-style: italic;
+      color: #666057;
+      margin: 20px 0 30px;
+    }
+
+    .info {
+      border-top: 1px solid #cec4b9;
+      border-bottom: 1px solid #cec4b9;
+      padding: 12px 0;
+      font-family: "Courier New", monospace;
+      font-size: 11px;
+      line-height: 1.8;
+    }
+
+    .row {
+      display: flex;
+      justify-content: space-between;
+      gap: 15px;
+    }
+
+    .row span:first-child {
+      color: #8e857c;
+      text-transform: uppercase;
+    }
+
+    .open-wrap {
+      margin-top: 28px;
+      text-align: left;
+    }
+
+    .open {
+      display: inline-block;
+      padding: 12px 18px;
+      color: #111;
+      background: #c0c0c0;
+      border: 2px solid white;
+      border-right-color: #555;
+      border-bottom-color: #555;
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 12px;
+      font-weight: bold;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .footnote {
+      font-family: "Courier New", monospace;
+      font-size: 9px;
+      color: #847a70;
+    }
+
+    .statusbar {
+      min-height: 25px;
+      background: #c0c0c0;
+      border-top: 1px solid #777;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+      align-items: center;
+      padding: 4px 7px;
+      font-size: 10px;
+    }
+
+    .progress-box {
+      width: 100px;
+      height: 14px;
+      background: white;
+      border: 2px inset #ddd;
+      padding: 1px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background:
+        repeating-linear-gradient(
+          90deg,
+          #000080 0,
+          #000080 7px,
+          transparent 7px,
+          transparent 9px
+        );
+      transition: width .4s ease;
+    }
+
+    .transition-screen {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: #f4f0ea;
+      color: #1b1815;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 18px;
+      font-style: italic;
+      opacity: 0;
+    }
+
+    .transition-screen.active {
+      display: flex;
+      animation: transitionIn .8s ease forwards;
+    }
+
+    @keyframes blink {
+      0%, 49% { opacity: 1; }
+      50%, 100% { opacity: 0; }
+    }
+
+    @keyframes boot {
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    @keyframes reveal {
+      from {
+        opacity: 0;
+        transform: translateY(12px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes transitionIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @media (max-width: 600px) {
+      body {
+        padding: 0;
+        align-items: stretch;
+      }
+
+      .desktop {
+        width: 100%;
+        min-height: 100svh;
+      }
+
+      .browser {
+        min-height: 100svh;
+        border-left: 0;
+        border-right: 0;
+        box-shadow: none;
+      }
+
+      .menu {
+        gap: 12px;
+        font-size: 10px;
+      }
+
+      .viewport,
+      .site {
+        min-height: calc(100svh - 122px);
+      }
+
+      .site {
+        padding: 34px 22px 28px;
+      }
+
+      .main {
+        margin: 42px auto;
+      }
+
+      .file-card {
+        padding: 22px 18px;
+      }
+
+      h1 {
+        font-size: clamp(48px, 16vw, 70px);
+      }
+
+      .statusbar {
+        grid-template-columns: 1fr;
+      }
+
+      .progress-box {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="desktop">
+    <div class="browser">
+
+      <div class="titlebar">
+        <span>Netscape Navigator — AQUILO QUE VEJO</span>
+        <div class="window-buttons">
+          <div class="win-btn">_</div>
+          <div class="win-btn">□</div>
+          <div class="win-btn">×</div>
+        </div>
+      </div>
+
+      <div class="toolbar">
+        <div class="menu">
+          <span>Arquivo</span>
+          <span>Editar</span>
+          <span>Exibir</span>
+          <span>Ir</span>
+          <span>Ajuda</span>
+        </div>
+
+        <div class="address-row">
+          <span class="address-label">Endereço:</span>
+          <div class="address">
+            aquiloquevejo://arquivo/01
+          </div>
+        </div>
+      </div>
+
+      <div class="viewport">
+        <div class="scanlines"></div>
+
+        <main class="site">
+          <div class="top-meta">
+            arquivo pessoal · volume I
+          </div>
+
+          <div class="main">
+            <div id="status" class="status">
+              iniciando conexão<span class="cursor"></span>
+            </div>
+
+            <section id="fileCard" class="file-card">
+              <div class="tiny">arquivo encontrado</div>
+
+              <h1>
+                <span>Aquilo</span>
+                <span>que vejo</span>
+              </h1>
+
+              <div class="descriptor">
+                algumas coisas só existem porque alguém reparou nelas.
+              </div>
+
+              <div class="info">
+                <div class="row">
+                  <span>destinatário</span>
+                  <span>Marlon</span>
+                </div>
+
+                <div class="row">
+                  <span>ano</span>
+                  <span>2026</span>
+                </div>
+
+                <div class="row">
+                  <span>classificação</span>
+                  <span>pessoal</span>
+                </div>
+
+                <div class="row">
+                  <span>acesso</span>
+                  <span>autorizado</span>
+                </div>
+              </div>
+
+              <div class="open-wrap">
+                <a href="./livro/index.html" id="openBook" class="open">
+                  ABRIR ARQUIVO
+                </a>
+              </div>
+            </section>
+          </div>
+
+          <div class="footnote">
+            melhor visualizado sem pressa.
+          </div>
+        </main>
+      </div>
+
+      <div class="statusbar">
+        <span id="browserStatus">Conectando...</span>
+
+        <div class="progress-box">
+          <div id="progressFill" class="progress-fill"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div id="transition" class="transition-screen">
+    entrando no arquivo...
+  </div>
+
+  <script>
+    const status = document.getElementById("status");
+    const fileCard = document.getElementById("fileCard");
+    const browserStatus = document.getElementById("browserStatus");
+    const progressFill = document.getElementById("progressFill");
+    const openBook = document.getElementById("openBook");
+    const transition = document.getElementById("transition");
+
+    const steps = [
+      { text: "estabelecendo conexão...", progress: "18%" },
+      { text: "procurando destinatário...", progress: "42%" },
+      { text: "destinatário encontrado: MARLON", progress: "68%" },
+      { text: "verificando acesso...", progress: "86%" },
+      { text: "acesso autorizado.", progress: "100%" }
+    ];
+
+    let index = 0;
+
+    function showStep() {
+      const step = steps[index];
+
+      status.innerHTML = step.text + '<span class="cursor"></span>';
+      browserStatus.textContent = step.text;
+      progressFill.style.width = step.progress;
+
+      index++;
+
+      if (index < steps.length) {
+        setTimeout(showStep, 650);
+      } else {
+        setTimeout(() => {
+          fileCard.classList.add("visible");
+          browserStatus.textContent = "Documento concluído.";
+        }, 650);
+      }
+    }
+
+    setTimeout(showStep, 500);
+
+    openBook.addEventListener("click", function(event) {
+      event.preventDefault();
+
+      transition.classList.add("active");
+
+      setTimeout(() => {
+        window.location.href = "./livro/index.html";
+      }, 900);
+    });
+  </script>
+</body>
+</html>

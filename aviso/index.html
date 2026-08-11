@@ -255,48 +255,142 @@
 
   </main>
 
-  <script>
-    const release = new Date("2026-08-11T00:00:00-03:00");
+<script>
+  const release = new Date("2026-08-11T00:00:00-03:00");
 
-    const access = document.getElementById("access");
-    const reason = document.getElementById("reason");
-    const countdown = document.getElementById("countdown");
-    const open = document.getElementById("open");
+  const access = document.getElementById("access");
+  const reason = document.getElementById("reason");
+  const countdown = document.getElementById("countdown");
+  const open = document.getElementById("open");
 
-    function update() {
-      const now = new Date();
-      const diff = release - now;
+  let unlocking = false;
 
-      if (diff <= 0) {
-        access.textContent = "AUTORIZADO.";
-        access.className = "authorized";
+  function liberado() {
+    access.textContent = "AUTORIZADO.";
+    access.className = "authorized";
 
-        reason.innerHTML =
-          "status atualizado: a pessoa responsável sobreviveu à espera.";
+    reason.innerHTML =
+      "status atualizado: a pessoa responsável sobreviveu à espera.";
 
-        countdown.textContent =
-          "arquivo liberado.";
+    countdown.textContent = "arquivo liberado.";
 
-        open.classList.add("visible");
+    open.classList.add("visible");
+  }
 
-        return;
-      }
+  function criarTelaDeDesbloqueio() {
+    if (unlocking) return;
+    unlocking = true;
 
-      const hours = Math.floor(diff / 1000 / 60 / 60);
-      const minutes = Math.floor((diff / 1000 / 60) % 60);
-      const seconds = Math.floor((diff / 1000) % 60);
+    const tela = document.createElement("div");
 
-      countdown.textContent =
-        "tempo restante para liberação: " +
-        String(hours).padStart(2, "0") + ":" +
-        String(minutes).padStart(2, "0") + ":" +
-        String(seconds).padStart(2, "0");
+    tela.style.position = "fixed";
+    tela.style.inset = "0";
+    tela.style.background = "#050505";
+    tela.style.zIndex = "99999";
+    tela.style.display = "flex";
+    tela.style.alignItems = "center";
+    tela.style.justifyContent = "center";
+    tela.style.padding = "30px";
+    tela.style.fontFamily = '"Courier New", monospace';
+    tela.style.color = "#d7d7d7";
 
-      setTimeout(update, 1000);
+    tela.innerHTML = `
+      <div style="
+        width:min(100%,600px);
+        border:1px solid #444;
+        padding:30px;
+        background:#0c0c0c;
+        box-shadow:10px 10px 0 #000;
+      ">
+        <div style="
+          color:#777;
+          font-size:11px;
+          letter-spacing:.14em;
+          margin-bottom:25px;
+        ">
+          SISTEMA DE ACESSO
+        </div>
+
+        <div id="terminalText" style="
+          font-size:14px;
+          line-height:2;
+          min-height:170px;
+        "></div>
+
+        <span style="
+          display:inline-block;
+          width:8px;
+          height:14px;
+          background:#ddd;
+          animation:blink .8s steps(1) infinite;
+        "></span>
+      </div>
+    `;
+
+    document.body.appendChild(tela);
+
+    const terminal = document.getElementById("terminalText");
+
+    const mensagens = [
+      "00:00:00",
+      "verificando data...",
+      "data confirmada.",
+      "localizando destinatário...",
+      "destinatário encontrado: MARLON",
+      "atualizando permissões...",
+      "ACESSO AUTORIZADO."
+    ];
+
+    mensagens.forEach((mensagem, index) => {
+      setTimeout(() => {
+        const linha = document.createElement("div");
+
+        linha.textContent = "> " + mensagem;
+
+        if (mensagem === "ACESSO AUTORIZADO.") {
+          linha.style.color = "#77a66f";
+        }
+
+        terminal.appendChild(linha);
+      }, index * 700);
+    });
+
+    setTimeout(() => {
+      tela.style.transition = "opacity .7s ease";
+      tela.style.opacity = "0";
+
+      setTimeout(() => {
+        tela.remove();
+        liberado();
+      }, 700);
+
+    }, mensagens.length * 700 + 800);
+  }
+
+  function update() {
+    const now = new Date();
+    const diff = release - now;
+
+    if (diff <= 0) {
+      criarTelaDeDesbloqueio();
+      return;
     }
 
-    update();
-  </script>
+    const hours = Math.floor(diff / 1000 / 60 / 60);
+    const minutes = Math.floor((diff / 1000 / 60) % 60);
+    const seconds = Math.floor((diff / 1000) % 60);
+
+    countdown.textContent =
+      "tempo restante para liberação: " +
+      String(hours).padStart(2, "0") + ":" +
+      String(minutes).padStart(2, "0") + ":" +
+      String(seconds).padStart(2, "0");
+
+    setTimeout(update, 1000);
+  }
+
+  update();
+</script>
 
 </body>
 </html>
